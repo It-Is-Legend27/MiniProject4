@@ -1,58 +1,81 @@
 #include <iostream>
-#include <bitset>
-#include <queue>
-#include <vector>
-
+#include <deque>
+#include <algorithm>
 using namespace std;
 
-void showq(queue<int> gq)
+struct comp
 {
-	queue<int> g = gq;
-	while (!g.empty()) {
-		cout << '\t' << g.front();
-		g.pop();
-	}
-	cout << '\n';
+    comp(unsigned int const& s) : _s(s) { }
+
+    bool operator () (pair<unsigned int, bool> const& p)
+    {
+        return (p.first == _s);
+    }
+
+    unsigned int _s;
+};
+
+bool isPageFaultFIFO(deque<unsigned int> q, unsigned pageNum)
+{
+	return find(q.begin(), q.end(), pageNum) == q.end();
 }
 
-int main() {
+bool isPageFault2nd(deque<pair<unsigned int, bool>> q, unsigned pageNum)
+{
+	return find_if(q.begin(), q.end(), comp(pageNum)) == q.end();
+}
+
+int main()
+{
 	srand(time(0));
 	int randomNumber;
-	vector<int> pages;
+	deque<unsigned int> pages;
+	deque<pair<unsigned int, bool>> second;
 	int pageFaults = 0;
-
-	queue<int> que;
+	int pageFaults2 = 0;
+	
 	unsigned int page_mask = 0x3F;
-	for (int i = 0; i < 10; i++) {
-		randomNumber = rand() % 4096;
 
+	for (int i = 0; i < 30; i++)
+	{
+		randomNumber = rand() % 4096;
 		unsigned int pageNum = page_mask & (randomNumber >> 6);
 
-		if (que.size() > 10) {
-			for (int i = 0; i < pages.size(); i++) {
-				if (pageNum == pages[i]) {
-					return;
-				}
-				else
-				{
-
-				}
-			}
-			que.pop();
-			que.push(pageNum);
-
-		}
-		else
+		if(isPageFaultFIFO(pages, pageNum))
 		{
-			que.push(pageNum);
-			pages.push_back(pageNum)
+			pageFaults++;
+
+			if(pages.size() > 10)
+				pages.pop_front();
+
+			pages.push_back(pageNum);
 		}
+
+
+		if(isPageFault2nd(second, pageNum))
+		{
+			pageFaults2++;
+
+			// TODO: Make this work
+			if(second.size() > 10)
+			{
+				pair<unsigned int, bool> temp = *(second.begin());
+			}
+			second.push_back(pair<unsigned int, bool>(pageNum, true));
+		}
+		  
+	}
+	
+	for (int i = 0; i < pages.size(); i++)
+	{
+		cout << pages[i] << endl;
 	}
 
-	
+	cout << endl << "Total page faults: " << pageFaults << endl;
+
 	return 0;
 }
-//cout << hex << pageNum << endl; //first 6 bits in hex
-//cout << hex << page << endl; //last 6 bits in hex
-//cout << randomNumber << endl;
-//cout << hex << randomNumber << endl;
+// cout << hex << pageNum << endl; //first 6 bits in hex
+// cout << hex << page << endl; //last 6 bits in hex
+// cout << randomNumber << endl;
+// cout << hex << randomNumber << endl;
