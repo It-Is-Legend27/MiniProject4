@@ -1,0 +1,3 @@
+Total page faults (FIFO): 8475
+Total page faults (2nd chance): 8471
+
